@@ -5,10 +5,10 @@ from torchvision import transforms
 
 
 class LoadItem(DataLoader):
-    def __init__(self):
+    def __init__(self, root_dir):
 
         # define the data folder
-        self.data_dir = "/Users/rakshitbhatt/Documents/GalaxEye /Disease Classification/Potato/"
+        self.data_dir = root_dir
 
         # define the different classes in the dataset
         self.data_dict = {'0': "Potato___Early_blight/",
@@ -43,7 +43,7 @@ class LoadItem(DataLoader):
 
     def __getitem__(self, idx):
         if idx < self.id1:
-            image = Image.open(self.data_dir+self.data_dict.get('0')+self.files[idx])
+            image = Image.open(self.data_dir + self.data_dict.get('0') + self.files[idx])
             image = self.transforms(image)
             return [0, image]
         elif idx < self.id1 + self.id2:
@@ -51,6 +51,6 @@ class LoadItem(DataLoader):
             image = self.transforms(image)
             return [1, image]
         else:
-            image = Image.open(self.data_dir+self.data_dict.get('2')+self.files[idx])
+            image = Image.open(self.data_dir + self.data_dict.get('2') + self.files[idx])
             image = self.transforms(image)
             return [2, image]

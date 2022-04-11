@@ -38,6 +38,14 @@ class SimpleClassification(nn.Module):
     def forward(self, x):
         out = self.simple_model(x)
         out = torch.flatten(out, 1)
-        print("the shape of flattened out is {}".format(out.shape))
+        # print("the shape of flattened out is {}".format(out.shape))
         out = self.linear(out)
         return out
+
+
+'Local debugging of the model and the DataLoader'
+# example = next(iter(data_interator))
+# print(example[1][0].shape)
+# model = SimpleClassification()
+# out = model.forward(example[1])
+# print(out)
