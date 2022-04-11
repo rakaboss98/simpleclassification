@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
 from dataloader.DataLoader import LoadItem
-from dataloader.Model import SimpleClassification
+from models.Model import SimpleClassification
 
 if __name__ == '__main__':
 
