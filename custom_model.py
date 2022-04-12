@@ -25,19 +25,48 @@ if __name__ == '__main__':
         return labels[1:]
 
 
-    def ValidateModel(model_state_dict):
+    def ValidateModel(path_to_checkpoint):
         test_loader = LoadItem(root_test_dir)
-        model = torch.load(model_state_dict)
-        model = model.to(device)
+        test_model = SimpleClassification()
+        test_model.load_state_dict(torch.load(path_to_checkpoint))
+        test_model = test_model.to(device)
+        test_model.eval()
         test_iterator = DataLoader(test_loader, batch_size=8, shuffle=False)
 
-        for idx, val_examples in test_iterator:
-            pred_labels = model(val_examples[1])
+        accuracy = 0
+        category = 0.0
+        total_positives = 0
+        actual_positives = 0
+        recall = 0
+
+        for idx, val_examples in enumerate(test_iterator):
+            print("batch Number is: {}".format(idx))
+            pred_labels = test_model(val_examples[1])
+            pred_labels = torch.max(pred_labels, 1)
             actual_labels = generate_labels(val_examples[0])
+            actual_labels = torch.max(actual_labels, 1)
+            # print("The predicted labels are: {}".format(pred_labels))
+            # print("The actual labels are: {}".format(actual_labels))
 
-            # define your metric here
+            # define your metrics here
+            correct_predictions = (pred_labels.indices == actual_labels.indices)
+            accuracy += torch.sum(correct_predictions == True)
 
-        return 0
+            temp_total_positives = pred_labels.indices == category
+            temp_actual_positives = temp_total_positives == (actual_labels == category)
+            actual_positives += torch.sum(temp_actual_positives == True)
+            total_positives += torch.sum(temp_total_positives == True)
+
+            # Recall and confusion metric to this model
+
+        print("the accuracy of the model is {}".format(accuracy))
+        print("the precision of category {} is {}".format(category, actual_positives / total_positives))
+        print("the recall of category {} is {}".format(category, recall))
+
+        return None
+
+
+    ValidateModel('checkpoint/saved_model.pt')
 
 
     def TrainModel(batch_size=8, epochs=1):
@@ -49,6 +78,7 @@ if __name__ == '__main__':
         loss_history = {}
 
         for epoch in range(epochs):
+
             data_interator = DataLoader(data_loader,
                                         batch_size=batch_size,
                                         shuffle=True)
@@ -70,6 +100,10 @@ if __name__ == '__main__':
                 loss.backward()
                 optimizer.step()
 
+            torch.save(train_model.state_dict(), 'checkpoint/saved_model.pt')
+
+            # Test the trained model
+            ValidateModel('checkpoint/saved_model.pt')
 
     # Put the model on training
-    TrainModel(batch_size=4, epochs=1)
+    # TrainModel(batch_size=4, epochs=1)
