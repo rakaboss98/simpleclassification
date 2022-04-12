@@ -33,40 +33,53 @@ if __name__ == '__main__':
         test_model.eval()
         test_iterator = DataLoader(test_loader, batch_size=8, shuffle=False)
 
-        accuracy = 0
-        category = 0.0
-        total_positives = 0
-        actual_positives = 0
-        recall = 0
+        predicted_labels = torch.zeros((1, 3))
+        actual_labels = torch.zeros((1, 3))
+
+        def calc_accuracy(predicted, actual):
+            actual = torch.max(actual, 1)
+            predicted = torch.max(predicted, 1)
+            correct = (predicted.indices == actual.indices)
+            accuracy = torch.sum(correct == True)
+            print("The accuracy of the Model is {}".format(accuracy))
+            return accuracy
+
+        def calc_precision(predicted, actual, cat):
+            predicted = torch.max(predicted, 1)
+            actual = torch.max(actual, 1)
+            actual_positives = torch.sum((predicted.indices == cat) == True)
+            # print(predicted.indices == cat, actual.indices == cat, (predicted.indices == cat) * (actual.indices == cat))
+            true_positives = torch.sum((predicted.indices == cat) * (actual.indices == cat) == True)
+            precision = true_positives / actual_positives
+            print("The precision of the category {} is {}".format(cat, precision))
+            return precision
+
+        def calc_recall(predicted, actual, cat):
+            predicted = torch.max(predicted, 1)
+            actual = torch.max(actual, 1)
+            total_positives = torch.sum((actual.indices == cat) == True)
+            # print(predicted.indices == cat, actual.indices == cat, (predicted.indices == cat) * (actual.indices == cat))
+            true_positives = torch.sum((predicted.indices == cat) * (actual.indices == cat) == True)
+            recall = true_positives / total_positives
+            print("The recall of the category {} is {}".format(cat, recall))
+            return recall
 
         for idx, val_examples in enumerate(test_iterator):
-            print("batch Number is: {}".format(idx))
+            # print("batch Number is: {}".format(idx))
             pred_labels = test_model(val_examples[1])
-            pred_labels = torch.max(pred_labels, 1)
-            actual_labels = generate_labels(val_examples[0])
-            actual_labels = torch.max(actual_labels, 1)
-            # print("The predicted labels are: {}".format(pred_labels))
-            # print("The actual labels are: {}".format(actual_labels))
+            predicted_labels = torch.cat((predicted_labels, pred_labels), dim=0)
 
-            # define your metrics here
-            correct_predictions = (pred_labels.indices == actual_labels.indices)
-            accuracy += torch.sum(correct_predictions == True)
+            act_labels = generate_labels(val_examples[0])
+            actual_labels = torch.cat((actual_labels, act_labels), dim=0)
 
-            temp_total_positives = pred_labels.indices == category
-            temp_actual_positives = temp_total_positives == (actual_labels == category)
-            actual_positives += torch.sum(temp_actual_positives == True)
-            total_positives += torch.sum(temp_total_positives == True)
+        # print("The predicted labels are: {}".format(predicted_labels))
+        # print("The actual labels are: {}".format(actual_labels))
 
-            # Recall and confusion metric to this model
-
-        print("the accuracy of the model is {}".format(accuracy))
-        print("the precision of category {} is {}".format(category, actual_positives / total_positives))
-        print("the recall of category {} is {}".format(category, recall))
+        calc_accuracy(predicted_labels, actual_labels)
+        calc_precision(predicted_labels, actual_labels, 1)
+        calc_recall(predicted_labels, actual_labels, 1)
 
         return None
-
-
-    ValidateModel('checkpoint/saved_model.pt')
 
 
     def TrainModel(batch_size=8, epochs=1):
@@ -106,4 +119,4 @@ if __name__ == '__main__':
             ValidateModel('checkpoint/saved_model.pt')
 
     # Put the model on training
-    # TrainModel(batch_size=4, epochs=1)
+    TrainModel(batch_size=4, epochs=5)
