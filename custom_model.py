@@ -7,8 +7,8 @@ from models.Model import SimpleClassification
 
 if __name__ == '__main__':
 
-    root_train_dir = "/Users/rakshitbhatt/Documents/GalaxEye /Disease Classification/Potato/Train/"
-    root_test_dir = "/Users/rakshitbhatt/Documents/GalaxEye /Disease Classification/Potato/Test/"
+    root_train_dir = "/Users/rakshitbhatt/Documents/GalaxEye /Datasets/Disease Classification/Potato/Train/"
+    root_test_dir = "/Users/rakshitbhatt/Documents/GalaxEye /Datasets/Disease Classification/Potato/Test/"
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
